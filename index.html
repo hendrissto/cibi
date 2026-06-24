@@ -48,6 +48,21 @@ button {
     margin: 0 auto;
     width: 150px;
 }
+
+.pay-btn{
+    padding:10px 16px;
+    margin:5px;
+    border:2px solid #ddd;
+    background:white;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.pay-btn.active{
+    background:black;
+    color:white;
+    border-color:black;
+}
 </style>
 </head>
 
@@ -133,6 +148,22 @@ button {
     <button onclick="plus('cibicookies')">+</button>
 </div>
 
+<h2>Metode Pembayaran</h2>
+
+<div class="card">
+    <button type="button" class="pay-btn active" onclick="selectPayment('Cash', this)">
+        Cash
+    </button>
+
+    <button type="button" class="pay-btn" onclick="selectPayment('Qris', this)">
+        QRIS
+    </button>
+
+    <button type="button" class="pay-btn" onclick="selectPayment('Transfer', this)">
+        Transfer
+    </button>
+</div>
+
 <button class="submit" onclick="submitOrder()">
 KIRIM ORDER
 </button>
@@ -140,6 +171,8 @@ KIRIM ORDER
 <p id="msg"></p>
 
 <script>
+
+let selectedPayment = "Cash";
 
 // ✅ semua menu sudah benar
 const qty = {
@@ -205,12 +238,22 @@ function sleep(ms){
     return new Promise(r => setTimeout(r, ms));
 }
 
-async function sendToGoogle(menu, jumlah){
+function selectPayment(payment, btn){
+
+    selectedPayment = payment;
+
+    document.querySelectorAll(".pay-btn")
+        .forEach(b => b.classList.remove("active"));
+
+    btn.classList.add("active");
+}
+
+async function sendToGoogle(menu, jumlah, payment){
 
     const body = new URLSearchParams();
     body.append("entry.960002011", menu);
     body.append("entry.1329929177", jumlah);
-    body.append("entry.642292741", "Cash");
+    body.append("entry.642292741", payment);
 
     await fetch(
         "https://docs.google.com/forms/d/e/1FAIpQLSeht3QRd8dP-A8xqM45exFObietV3Lj7BLqHgUQdU5qu3iZPA/formResponse",
@@ -242,7 +285,7 @@ async function submitOrder(){
     try {
 
         for (const item of orders) {
-            await sendToGoogle(item, 1);
+            await sendToGoogle(item, 1, selectedPayment);
             await sleep(250);
         }
 
